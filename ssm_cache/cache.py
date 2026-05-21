@@ -1,11 +1,10 @@
 """ Cache module that implements the SSM caching wrapper """
-from __future__ import absolute_import, print_function
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
-import six
 
 from ssm_cache.filters import SSMFilter
+
 
 class InvalidParameterError(Exception):
     """ Raised when something's wrong with the provided param name """
@@ -15,6 +14,11 @@ class InvalidPathError(Exception):
 
 class InvalidVersionError(Exception):
     """ Raised when something's wrong with the provided param version """
+
+
+def _utcnow():
+    """Return the current UTC time as a timezone-aware datetime."""
+    return datetime.now(timezone.utc)
 
 
 class Refreshable(object):
@@ -54,7 +58,7 @@ class Refreshable(object):
         if not self._last_refresh_time:
             return True
         # force refresh only if max_age seconds have expired
-        return datetime.utcnow() > self._last_refresh_time + self._max_age_delta
+        return _utcnow() > self._last_refresh_time + self._max_age_delta
 
     def _update_refresh_time(self, keep_oldest_value=False):
         """
@@ -62,7 +66,7 @@ class Refreshable(object):
             Optionally, keep the oldest available reference
             (used by groups with multiple fetch operations at potentially different times)
         """
-        now = datetime.utcnow()
+        now = _utcnow()
         if keep_oldest_value and self._last_refresh_time:
             self._last_refresh_time = min(now, self._last_refresh_time)
         else:
@@ -84,7 +88,7 @@ class Refreshable(object):
     def _get_parameters(cls, names, with_decryption):
         items = {}
         invalid_names = []
-        for name_batch in _batch(names, 10): # can only get 10 parameters at a time
+        for name_batch in _batch(names, 10):  # can only get 10 parameters at a time
             response = SSMParameter._get_ssm_client().get_parameters(
                 Names=list(name_batch),
                 WithDecryption=with_decryption,
@@ -139,7 +143,6 @@ class Refreshable(object):
 
         return items
 
-
     def refresh_on_error(
             self,
             error_class=Exception,
@@ -165,6 +168,7 @@ class Refreshable(object):
                     return func(*args, **kwargs)
             return wrapped
         return true_decorator
+
 
 class SSMParameterGroup(Refreshable):
     """ Concrete class that wraps multiple SSM Parameters """
@@ -213,7 +217,7 @@ class SSMParameterGroup(Refreshable):
 
         parameters = []
         # create new parameters and set values
-        for name, item in six.iteritems(items):
+        for name, item in items.items():
             parameter = self.parameter(name, add_prefix=False)
             parameter._value = item['Value']  # pylint: disable=protected-access
             parameter._version = item['Version']  # pylint: disable=protected-access
@@ -246,10 +250,11 @@ class SSMParameterGroup(Refreshable):
 
     def get_loaded_parameters(self):
         """ Return a list of SSMParameter objects """
-        return six.itervalues(self._parameters)
+        return self._parameters.values()
 
     def __len__(self):
         return len(self._parameters)
+
 
 class SSMParameter(Refreshable):
     """ Concrete class for an individual SSM Parameter """
@@ -324,6 +329,7 @@ class SSMParameter(Refreshable):
             self.refresh()
         return self._value
 
+
 class SecretsManagerParameter(SSMParameter):
     """ Concrete class for an individual Secrets Manager parameter """
 
@@ -342,6 +348,7 @@ class SecretsManagerParameter(SSMParameter):
                 raise InvalidParameterError(param_name)
             param_name = "%s%s" % (cls.PREFIX, param_name)
         return param_name
+
 
 def _batch(iterable, num):
     """Turn an iterable into an iterable of batches of size n (or less, for the last one)"""

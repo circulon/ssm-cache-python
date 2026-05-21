@@ -1,4 +1,3 @@
-from __future__ import absolute_import, print_function
 
 class SSMFilter(object):
 
@@ -28,7 +27,7 @@ class SSMFilter(object):
 
     @classmethod
     def _validate_config(cls, key, option):
-        if not key in cls.KEY_ALLOWED_VALUES:
+        if key not in cls.KEY_ALLOWED_VALUES:
             raise ValueError("Invalid key value: %s" % key)
         if key != cls.KEY_PATH and option not in cls.OPTION_ALLOWED_VALUES:
             raise ValueError("Invalid option value: %s" % option)
@@ -71,7 +70,7 @@ class SSMFilterType(SSMFilter):
         super(SSMFilterType, self).__init__(self.KEY_TYPE, option)
 
     def value(self, value):
-        if not value in self.TYPE_ALLOWED_VALUES:
+        if value not in self.TYPE_ALLOWED_VALUES:
             raise ValueError("Invalid value for Type filter: %s" % value)
         return super(SSMFilterType, self).value(value)
 

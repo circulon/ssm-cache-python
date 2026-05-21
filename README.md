@@ -1,18 +1,14 @@
-AWS System Manager Parameter Store Caching Client for Python ([![Python 2.7](https://img.shields.io/badge/python-2.7-green.svg)](https://www.python.org/downloads/release/python-270/) [![Python 3.6](https://img.shields.io/badge/python-3.6-green.svg)](https://www.python.org/downloads/release/python-360/) [![Python 3.7](https://img.shields.io/badge/python-3.7-green.svg)](https://www.python.org/downloads/release/python-370/))
+AWS System Manager Parameter Store Caching Client for Python
 ==========================================================
 
-[![Build Status](https://travis-ci.org/alexcasalboni/ssm-cache-python.svg?branch=master)](https://travis-ci.org/alexcasalboni/ssm-cache-python)
+[![CI](https://github.com/alexcasalboni/ssm-cache-python/actions/workflows/ci.yml/badge.svg)](https://github.com/alexcasalboni/ssm-cache-python/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/alexcasalboni/ssm-cache-python/badge.svg)](https://coveralls.io/github/alexcasalboni/ssm-cache-python)
 [![PyPI version](https://badge.fury.io/py/ssm-cache.svg)](https://badge.fury.io/py/ssm-cache)
+[![Python versions](https://img.shields.io/pypi/pyversions/ssm-cache.svg)](https://pypi.org/project/ssm-cache/)
 [![GitHub license](https://img.shields.io/github/license/alexcasalboni/ssm-cache-python.svg)](https://github.com/alexcasalboni/ssm-cache-python/blob/master/LICENSE)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/alexcasalboni/ssm-cache-python/graphs/commit-activity)
 [![GitHub issues](https://img.shields.io/github/issues/alexcasalboni/ssm-cache-python.svg)](https://github.com/alexcasalboni/ssm-cache-python/issues)
-[![Open Source Love svg2](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
 [![GitHub stars](https://img.shields.io/github/stars/alexcasalboni/ssm-cache-python.svg)](https://github.com/alexcasalboni/ssm-cache-python/stargazers)
-
-
-
-
 
 This module wraps the AWS Parameter Store and adds a caching and grouping layer with max-age invalidation.
 
@@ -45,11 +41,12 @@ You can configure the `max_age` in seconds, after which the values will be autom
 ```python
 from ssm_cache import SSMParameter
 param_1 = SSMParameter('param_1', max_age=300)  # 5 min
-value_1 = param.value
+value_1 = param_1.value
 
 param_2 = SSMParameter('param_2', max_age=3600)  # 1 hour
 value_2 = param_2.value
 ```
+
 ### With multiple parameters
 
 You can configure more than one parameter to be fetched/cached/decrypted as a group.
@@ -131,6 +128,7 @@ from ssm_cache import SSMParameter
 twitter_params = SSMParameter('my_twitter_api_keys')
 key, secret, access_token, access_token_secret = twitter_params.value
 ```
+
 ### Explicit refresh
 
 You can manually force a refresh on a parameter or parameter group.
@@ -159,12 +157,12 @@ new_value_2 = param_2.value
 
 param_1.refresh()
 new_new_value_1 = param_1.value
-new_new_value_2 = param_2.value # one parameter refreshes the whole group
+new_new_value_2 = param_2.value  # one parameter refreshes the whole group
 ```
 
 ### Without decryption
 
-Decryption is enabled by default, but you can explicitly disable it (works for `SSMParameter` and `SSMGroup`).
+Decryption is enabled by default, but you can explicitly disable it (works for `SSMParameter` and `SSMParameterGroup`).
 
 ```python
 from ssm_cache import SSMParameter
@@ -183,7 +181,6 @@ value = secret.value
 ```
 
 Secrets can be added to a `SSMParameterGroup` as well, although no group prefix will be applied.
-
 
 ```python
 from ssm_cache import SSMParameterGroup
@@ -209,18 +206,13 @@ param = SSMParameter('my_param_name:2')
 value = param.value
 ```
 
-Please note that invoking `param.refresh()` will not fetch newer versions. This is the intended behavior, as version selection should be used only when you need a specific parameter version.
-
-If you don't specify any version, you can always read the current version of a parameter. In this case, invoking `param.refresh()` will invoke the new version.
-
+Please note that invoking `param.refresh()` will not fetch newer versions when a pinned version is used. If you don't specify any version, refreshing will always fetch the latest.
 
 ```python
 from ssm_cache import SSMParameter
 param = SSMParameter('my_param_name')
 print(param.version)  # will print an int
 ```
-
-
 
 ## Usage with AWS Lambda
 
@@ -235,7 +227,6 @@ def lambda_handler(event, context):
     dbname = param.value
     password = secret.value
     return 'Hello from Lambda with dbname %s and password %s' % (dbname, password)
-
 ```
 
 ## Complex invalidation based on "signals"
@@ -292,7 +283,6 @@ def lambda_handler(event, context):
     }
 ```
 
-
 The `refresh_on_error` decorator supports the following arguments:
 
 * **error_class** (default: `Exception`)
@@ -327,34 +317,41 @@ Clone this repository, create a virtualenv and install all the dev dependencies:
 ```bash
 git clone https://github.com/alexcasalboni/ssm-cache-python.git
 cd ssm-cache-python
-virtualenv env
+python -m venv env
 source env/bin/activate
 pip install -r requirements-dev.txt
 ```
 
-You can run tests with `nose`:
+### Running the tests
 
 ```bash
-nosetests
+pytest
 ```
 
-Generate a coverage report:
+Run with coverage:
 
 ```bash
-nosetests --with-coverage --cover-erase --cover-html --cover-package=ssm_cache
-open cover/index.html
+pytest --cov=ssm_cache --cov-report=term-missing
 ```
 
-Run pylint:
+Open an HTML coverage report in your browser:
+
+```bash
+pytest --cov=ssm_cache --cov-report=html
+open htmlcov/index.html
+```
+
+### Linting
 
 ```bash
 pylint ssm_cache
 ```
 
-Note: when you open a new PR, GitHub will run tests on multiple Python environments and verify the new coverage for you, but we highly recommend you run these tasks locally as well before submitting new code.
+Note: when you open a new PR, GitHub Actions will run the full test matrix across Python 3.8–3.13 and report coverage automatically. We highly recommend running tests and lint locally before submitting.
 
 ## What's new?
 
+* **version 2.11**: dropped Python <3.8 support ; fixed `datetime.utcnow()` deprecation (Python 3.12+); updated to moto v5 `mock_aws`; migrated CI from Travis to GitHub Actions; replaced nose with pytest
 * **version 2.10**: exclude tests folder from site-packages
 * **version 2.9**: bugfix, versioning support, tests with Python 3.7
 * **version 2.8**: bugfix, new tests, fixed Travis build config
