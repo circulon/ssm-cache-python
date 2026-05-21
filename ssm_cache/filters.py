@@ -1,10 +1,8 @@
-
-class SSMFilter(object):
-
-    KEY_NAME = 'Name'
-    KEY_TYPE = 'Type'
-    KEY_KEYID = 'KeyId'
-    KEY_PATH = 'Path'
+class SSMFilter:
+    KEY_NAME = "Name"
+    KEY_TYPE = "Type"
+    KEY_KEYID = "KeyId"
+    KEY_PATH = "Path"
     KEY_ALLOWED_VALUES = (
         KEY_NAME,
         KEY_TYPE,
@@ -12,10 +10,10 @@ class SSMFilter(object):
         KEY_PATH,
     )
 
-    OPTION_EQUALS = 'Equals'
-    OPTION_BEGINSWITH = 'BeginsWith'
-    OPTION_RECURSIVE = 'Recursive'
-    OPTION_ONELEVEL = 'OneLevel'
+    OPTION_EQUALS = "Equals"
+    OPTION_BEGINSWITH = "BeginsWith"
+    OPTION_RECURSIVE = "Recursive"
+    OPTION_ONELEVEL = "OneLevel"
     OPTION_ALLOWED_VALUES = (OPTION_EQUALS, OPTION_BEGINSWITH)
     OPTION_PATH_ALLOWED_VALUES = (OPTION_RECURSIVE, OPTION_ONELEVEL)
 
@@ -47,23 +45,24 @@ class SSMFilter(object):
 
     def to_dict(self):
         filter_dict = {
-            'Key': self._key,
-            'Option': self._option,
+            "Key": self._key,
+            "Option": self._option,
         }
         if self._values:
-            filter_dict['Values'] = list(self._values)
+            filter_dict["Values"] = list(self._values)
         return filter_dict
+
 
 class SSMFilterName(SSMFilter):
     def __init__(self, option=SSMFilter.OPTION_EQUALS):
         super(SSMFilterName, self).__init__(self.KEY_NAME, option)
         raise NotImplementedError("Not implemented yet (by AWS)")
 
-class SSMFilterType(SSMFilter):
 
-    TYPE_STRING = 'String'
-    TYPE_STRINGLIST = 'StringList'
-    TYPE_SECURESTRING = 'SecureString'
+class SSMFilterType(SSMFilter):
+    TYPE_STRING = "String"
+    TYPE_STRINGLIST = "StringList"
+    TYPE_SECURESTRING = "SecureString"
     TYPE_ALLOWED_VALUES = (TYPE_STRING, TYPE_STRINGLIST, TYPE_SECURESTRING)
 
     def __init__(self, option=SSMFilter.OPTION_EQUALS):
@@ -74,9 +73,11 @@ class SSMFilterType(SSMFilter):
             raise ValueError("Invalid value for Type filter: %s" % value)
         return super(SSMFilterType, self).value(value)
 
+
 class SSMFilterKeyId(SSMFilter):
     def __init__(self, option=SSMFilter.OPTION_EQUALS):
         super(SSMFilterKeyId, self).__init__(self.KEY_KEYID, option)
+
 
 class SSMFilterPath(SSMFilter):
     def __init__(self, option=SSMFilter.OPTION_RECURSIVE):
