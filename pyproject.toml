@@ -41,7 +41,7 @@ dev = [
     "placebo>=0.10.0",
     # code quality
     "ruff>=0.15",
-    "coveralls>=4.1.0",
+    "coveralls>=4.0",
 ]
 
 [tool.setuptools.packages.find]
