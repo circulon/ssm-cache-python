@@ -1,6 +1,8 @@
 from datetime import timedelta
 from functools import wraps
 
+import botocore.exceptions
+
 from ssm_cache.filters import SSMFilter
 from ssm_cache.utils import batch, utcnow
 
@@ -71,10 +73,21 @@ class Refreshable:
         invalid_names = []
 
         for name_batch in batch(names, 10):
-            response = cls._get_ssm_client().get_parameters(
-                Names=list(name_batch),
-                WithDecryption=with_decryption,
-            )
+            try:
+                response = cls._get_ssm_client().get_parameters(
+                    Names=list(name_batch),
+                    WithDecryption=with_decryption,
+                )
+            except botocore.exceptions.ClientError as exc:
+                # SSM raises ParameterNotFound (rather than listing names in
+                # InvalidParameters) when a Secrets Manager reference doesn't
+                # exist.  Normalise to the same invalid-name path so callers
+                # always get InvalidParameterError.
+                code = exc.response.get("Error", {}).get("Code", "")
+                if code == "ParameterNotFound":
+                    invalid_names.extend(list(name_batch))
+                    continue
+                raise
 
             invalid_names.extend(response["InvalidParameters"])
 
@@ -108,10 +121,7 @@ class Refreshable:
                 Path=path,
                 Recursive=recursive,
                 WithDecryption=with_decryption,
-                ParameterFilters=[
-                    serialize_filter(filter_obj)
-                    for filter_obj in (filters or [])
-                ],
+                ParameterFilters=[serialize_filter(filter_obj) for filter_obj in (filters or [])],
             )
         else:
             pages = [
@@ -120,8 +130,7 @@ class Refreshable:
                     Recursive=recursive,
                     WithDecryption=with_decryption,
                     ParameterFilters=[
-                        serialize_filter(filter_obj)
-                        for filter_obj in (filters or [])
+                        serialize_filter(filter_obj) for filter_obj in (filters or [])
                     ],
                 )
             ]

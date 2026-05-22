@@ -24,9 +24,7 @@ class SSMParameterGroup(Refreshable):
     @staticmethod
     def _validate_path(path):
         if path and not path.startswith("/"):
-            raise InvalidPathError(
-                f"Invalid path: {path} (should start with a slash)"
-            )
+            raise InvalidPathError(f"Invalid path: {path} (should start with a slash)")
 
     def parameter(self, path, add_prefix=True):
         if path in self._parameters:

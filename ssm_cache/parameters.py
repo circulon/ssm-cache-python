@@ -60,10 +60,7 @@ class SSMParameter(Refreshable):
         )
 
         if invalid_parameters or self._name not in items:
-            raise InvalidParameterError(
-                f"{self._name} is invalid. "
-                f"{invalid_parameters} - {items}"
-            )
+            raise InvalidParameterError(f"{self._name} is invalid. {invalid_parameters} - {items}")
 
         self.load(
             value=items[self._name]["Value"],

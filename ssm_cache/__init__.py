@@ -1,4 +1,4 @@
-"""Expose 'cache' submodule classes"""
+__version__ = "3.0.0"
 
 from ssm_cache.exceptions import (
     InvalidParameterError,

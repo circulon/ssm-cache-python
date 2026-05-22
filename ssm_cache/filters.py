@@ -26,11 +26,11 @@ class SSMFilter:
     @classmethod
     def _validate_config(cls, key, option):
         if key not in cls.KEY_ALLOWED_VALUES:
-            raise ValueError("Invalid key value: %s" % key)
+            raise ValueError(f"Invalid key value: {key}")
         if key != cls.KEY_PATH and option not in cls.OPTION_ALLOWED_VALUES:
-            raise ValueError("Invalid option value: %s" % option)
+            raise ValueError(f"Invalid option value: {option}")
         if key == cls.KEY_PATH and option not in cls.OPTION_PATH_ALLOWED_VALUES:
-            raise ValueError("Invalid option value for Path key: %s" % option)
+            raise ValueError(f"Invalid option value for Path key: {option}")
 
     def value(self, value):
         if len(self._values) == 50:
@@ -55,7 +55,7 @@ class SSMFilter:
 
 class SSMFilterName(SSMFilter):
     def __init__(self, option=SSMFilter.OPTION_EQUALS):
-        super(SSMFilterName, self).__init__(self.KEY_NAME, option)
+        super().__init__(self.KEY_NAME, option)
         raise NotImplementedError("Not implemented yet (by AWS)")
 
 
@@ -66,20 +66,20 @@ class SSMFilterType(SSMFilter):
     TYPE_ALLOWED_VALUES = (TYPE_STRING, TYPE_STRINGLIST, TYPE_SECURESTRING)
 
     def __init__(self, option=SSMFilter.OPTION_EQUALS):
-        super(SSMFilterType, self).__init__(self.KEY_TYPE, option)
+        super().__init__(self.KEY_TYPE, option)
 
     def value(self, value):
         if value not in self.TYPE_ALLOWED_VALUES:
-            raise ValueError("Invalid value for Type filter: %s" % value)
-        return super(SSMFilterType, self).value(value)
+            raise ValueError(f"Invalid value for Type filter: {value}")
+        return super().value(value)
 
 
 class SSMFilterKeyId(SSMFilter):
     def __init__(self, option=SSMFilter.OPTION_EQUALS):
-        super(SSMFilterKeyId, self).__init__(self.KEY_KEYID, option)
+        super().__init__(self.KEY_KEYID, option)
 
 
 class SSMFilterPath(SSMFilter):
     def __init__(self, option=SSMFilter.OPTION_RECURSIVE):
-        super(SSMFilterPath, self).__init__(self.KEY_PATH, option)
+        super().__init__(self.KEY_PATH, option)
         raise NotImplementedError("Not implemented yet (by AWS)")
