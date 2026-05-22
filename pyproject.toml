@@ -34,7 +34,7 @@ Repository = "https://github.com/alexcasalboni/ssm-cache-python"
 [project.optional-dependencies]
 dev = [
     # testing
-    "pytest>=9.0.3",
+    "pytest>=8.3",
     "pytest-cov>=7.1.0",
     "moto>=5.2.1",
     "freezegun>=1.5.5",
@@ -42,9 +42,6 @@ dev = [
     # code quality
     "ruff>=0.15",
     "coveralls>=4.1.0",
-    # docs
-    "Pygments>=2.20.0",
-    "pypandoc>=1.17",
 ]
 
 [tool.setuptools.packages.find]
